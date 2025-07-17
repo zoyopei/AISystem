@@ -9,7 +9,7 @@
 传统编译器在编译期间，编译器会设法识别出常量表达式，对其进行求值，然后用求值的结果来替换表达式，从而使得运行时更精简。
 
 ```python
-day_ sec = 24*60*60
+day_sec = 24*60*60
 ```
 
  当编译器遇到这样的一个常量表达式时，表达式会被计算值所替换。因此上述表达式可以等效地被执行为 :
@@ -18,7 +18,7 @@ day_ sec = 24*60*60
 day_sec = 86400
 ```
 
-以 python 为例，在 python 中，使用反汇编模块 Disassembler 获取 day_ sec = 24×60×60 的 CPython 的字节码。
+以 python 为例，在 python 中，使用反汇编模块 Disassembler 获取 `day_sec = 24×60×60` 的 CPython 的字节码。
 
  ```python
 import dis
@@ -33,7 +33,7 @@ dis.dis("day_sec=24*60*60")
               6 RETURN_VALUE
 ```
 
-上述的 CPython 的字节码表明，python 在对 day_sec 赋值是直接加载计算结果 86400，相比于 3 次载入数据和两次乘法，更加地高效。
+上述的 CPython 的字节码表明，python 在对 `day_sec` 赋值是直接加载计算结果 86400，相比于 3 次载入数据和两次乘法，更加地高效。
 
 表达式可进行常量折叠，当且仅当表达式的所有子表达式都是常量。而子表达式被判断为常量通常需要常量传播的帮助。
 
@@ -77,19 +77,19 @@ int y = 0;
 return 0;
 ```
 
-由例子可见，常量传播对于常量折叠的重要性。在传统编译器中，常量传播主要是通过对控制流图(CFG)进行可达性分析，为每个基本块维护一个可达集合，记为 $Reaches(n)$。其含义为若定义 $d\in Reaches(n)$,则意味着存在一条从入口基本块到基本块 $b_n$ 的路径，d 没有被重新定义。计算公式如下：
+由例子可见，常量传播对于常量折叠的重要性。在传统编译器中，常量传播主要是通过对控制流图(CFG)进行可达性分析，为每个基本块维护一个可达集合，记为 $\text{Reaches}(n)$。其含义为若定义 $d\in \text{Reaches}(n)$,则意味着存在一条从入口基本块到基本块 $b_n$ 的路径，d 没有被重新定义。计算公式如下：
 
 $$
-Reaches(n) = \bigcup_{m\in preds(n)}(DEDef(m)\ \cup (Reaches(m)\ \cap\ \overline{DefKill(m)}))
+\text{Reaches}(n) = \bigcup_{m\in \text{preds}(n)}(\text{DEDef}(m)\ \cup (\text{Reaches}(m)\ \cap\ \overline{\text{DefKill}(m)}))
 $$
 
-方程的初始条件为：$Reaches(n) = \emptyset$, $\forall n$
+方程的初始条件为：$\text{Reaches}(n) = \emptyset$, $\forall n$
 
 其中：
 
-- $preds(n)$ 表示 n 的前趋结点集。
-- $DEDef(m)$ 表示基本块 $b_m$ 中向下展示的定义，其含义为若定义 $d\in DEDef(m)$，则意味着从 d 定义处到 $b_m$ 的出口处都没有被重新定义。
-- $DefKill(m)$ 表示在基本块 $b_m$ 中被杀死的定义。其含义若定义 $d\in DefKill(m)$，则意味着从 d 定义处到 $b_m$ 的出口处被重新定义。因此 $\overline{DefKill(m)}$ 包含了 m 中可见的所有定义位置。
+- $\text{preds}(n)$ 表示 n 的前趋结点集。
+- $\text{DEDef}(m)$ 表示基本块 $b_m$ 中向下展示的定义，其含义为若定义 $d\in \text{DEDef}(m)$，则意味着从 d 定义处到 $b_m$ 的出口处都没有被重新定义。
+- $\text{DefKill}(m)$ 表示在基本块 $b_m$ 中被杀死的定义。其含义若定义 $d\in \text{DefKill}(m)$，则意味着从 d 定义处到 $b_m$ 的出口处被重新定义。因此 $\overline{\text{DefKill}(m)}$ 包含了 m 中可见的所有定义位置。
 
 从公式上看，如果定义 d 在基本块的出口处是可达的，当且仅当定义 d 是基本块中向下展示的定义，或者定义 d 在基本块的入口处是可定义的，并且在基本块内没有被杀死。根据入口可达集合的定义，存在一条路径即可，所以定义 d 在基本块的入口处是可达的，只需要在其任意前趋结点的出口处是可达的即可。
 
@@ -106,7 +106,7 @@ String s1 = a + bc;
 在 java 中，只有被 **final** 修饰的变量，且该变量初始化的值是编译期常量，才是编译期常量。上述例子中，s1 不会被常量折叠成“abc”,而是根据 String 类特有的 **+** 运算符重载，变成类似下面这样的代码，不会进行常量折叠：
 
 ```java
-String s2 = new StringBuilder(a).append(b).toString(); 
+String s1 = new StringBuilder(a).append(b).toString(); 
 ```
 
 所以了解编译器对于编译期常量的定义是一件很重要的事情，这将决定你的代码能否进行常量折叠优化。除此之外，还有其他的一些情况可能会影响常量折叠，比如在 python 中，下面两种情况就不会被常量折叠：
@@ -188,7 +188,7 @@ String s2 = new StringBuilder(a).append(b).toString();
 
 不同编译器的常量折叠的实现细节不尽相同，下面以 python 为例来描述传统编译器的常量折叠的一种实现。
 
-在 python 中，CPython 会调用 astfold_expr 来对表达式进行常量折叠。astfold_expr 以递归的方式遍历 AST（抽象语法树），并尝试折叠所有的表达式。比如二值运算操作，astfold_expr 会先递归处理该二值操作的左操作数和右操作数，然后将此折叠操作代理给特定的折叠函数 fold_binop。在 fold_binop 中，首先会判断左操作数和右操作数是否都是常量，如果为常量，则判断该二值操作的具体操作类型，然后调用对应基本运算操作，比如 ADD 运算，会调用 PyNumber_Add。最后将计算出来的结果更新到 AST 对应的节点中。
+在 python 中，CPython 会调用 `astfold_expr` 来对表达式进行常量折叠。`astfold_expr` 以递归的方式遍历 AST（抽象语法树），并尝试折叠所有的表达式。比如二值运算操作，`astfold_expr` 会先递归处理该二值操作的左操作数和右操作数，然后将此折叠操作代理给特定的折叠函数 `fold_binop`。在 `fold_binop` 中，首先会判断左操作数和右操作数是否都是常量，如果为常量，则判断该二值操作的具体操作类型，然后调用对应基本运算操作，比如 ADD 运算，会调用 `PyNumber_Add`。最后将计算出来的结果更新到 AST 对应的节点中。
 
 ### AI 编译器实现案例
 

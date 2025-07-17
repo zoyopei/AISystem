@@ -43,11 +43,11 @@ $$
 当然还有许多符合结合律的化简，我们列几个在下方供读者参考。
 
 $$
-Recip(A) \diamond Recipe(A \diamond B) \rightarrow Square(Recip(A)) \diamond B
+\text{Recip}(A) \diamond \text{Recipe}(A \diamond B) \rightarrow \text{Square}(\text{Recip}(A)) \diamond B
 \\
 (A \diamond \sqrt B) \diamond (\sqrt B \diamond C) \rightarrow A \diamond B \diamond C
 \\
-(A \diamond ReduceSum(B)) \diamond (ReduceSum(B) \diamond C) \rightarrow A Square(ReduceSum(B)) \diamond C
+(A \diamond \text{ReduceSum}(B)) \diamond (\text{ReduceSum}(B) \diamond C) \rightarrow A \text{Square}(\text{ReduceSum}(B)) \diamond C
 $$
 
 ### 交换律
@@ -70,7 +70,7 @@ $$
 根据这样简洁优美的思想，我们可以发现以下的规则符合结合律：
 
 $$
-ReduceSum(BitShift(A)) \rightarrow BitShift(ReduceSum(A))
+\text{ReduceSum}(\text{BitShift}(A)) \rightarrow \text{BitShift}(\text{ReduceSum}(A))
 $$
 
 根据这样的规则我们可以看到如下实例的优化：
@@ -82,7 +82,7 @@ $$
 当然还有许多符合交换律的化简，我们列几个在下方供读者参考。
 
 $$
-ReduceProd(Exp(A)) \rightarrow Exp(ReduceSum(A))
+\text{ReduceProd}(\text{Exp}(A)) \rightarrow \text{Exp}(\text{ReduceSum}(A))
 $$
 
 ### 分配律 
@@ -120,7 +120,7 @@ $$
 $$
 A+A\diamond B \rightarrow A \diamond (B+1)
 \\
-Square(A+B)-(A+B)\diamond C \rightarrow (A+B)\diamond(A+B-C)
+\text{Square}(A+B)-(A+B)\diamond C \rightarrow (A+B)\diamond(A+B-C)
 $$
 
 > 注：当我们做代数简化时，一定要先注意到算子是否符合例如交换律，结合律等规则，例如矩阵乘法中 $AB \neq  BA$。
@@ -155,7 +155,7 @@ $$
   一个具体的实例如下：
 
   $$
-  Reshape(Reshape(x, shape1),shape2) \rightarrow Reshape(x, shape2)
+  \text{Reshape}(\text{Reshape}(x, shape1),shape2) \rightarrow \text{Reshape}(x, shape2)
   $$
 
   其中，$Shape2$ 的大小小于 $Shape1$。
@@ -177,7 +177,7 @@ $$
 我们还是以一个简单的例子为准，考虑以下 2 个矩阵与 2 个向量的相加：
 
 $$
-(S_1+Mat_1)+(S_2+Mat_2) \rightarrow(S_1+S_2)+(Mat_1+Mat_2)
+(S_1+{Mat}_1)+(S_2+ {Mat}_2) \rightarrow(S_1+S_2)+(Mat_1+Mat_2)
 $$
 
 ![BroadcastExample](images/10Algebraic07.png)

@@ -6,7 +6,7 @@
 
 ## 算子融合方式
 
-在讨论算子融合之前，我们首先要知道什么是计算图，计算图是对算子执行过程形象的表示，假设 $C = \{ N, E, I, O\}$ 为一个计算的计算表达，那么可以有：
+在讨论算子融合之前，我们首先要知道什么是计算图。计算图是对算子执行过程形象的表示，假设 $C = \{ N, E, I, O\}$ 为一个计算的计算表达，那么可以有：
 
 - 计算图表示为由一个节点 N（Node），边集（Edge），输入边（Input），输出边（Output）组成的四元组
 - 计算图是一个有向联通无环图，其中的节点也被称为算子(Operator)
@@ -168,46 +168,46 @@ $$
 - BN 计算：
 
 $$
-y = \gamma\frac{{\left( {z - mean} \right)}}{{\sqrt {\operatorname{var} } }} + \beta
+y = \gamma\frac{{\left( {z - \operatorname{mean}} \right)}}{{\sqrt {\operatorname{var} } }} + \beta
 $$
 
 - ReLU 计算：
 
   $$
-  y=max(0,y)
+  y=\operatorname{max}(0,y)
   $$
 - 融合卷积、BN 与 ReLU 的运算：
 
   将卷积计算公式带入到 BN 计算公式中，可得到下式：
 
   $$
-  y = \gamma\frac{{\left( {(w*x+b) - mean} \right)}}{{\sqrt {\operatorname{var} } }} + \beta
+  y = \gamma\frac{{\left( {(w*x+b) - \operatorname{mean}} \right)}}{{\sqrt {\operatorname{var} } }} + \beta
   $$
 
   展开后可得到：
 
   $$
-  y =\gamma\frac{w}{{\sqrt {\operatorname{var}}}}*x+\gamma\frac{{\left( {b - mean} \right)}}{{\sqrt {\operatorname{var} } }}  + \beta
+  y =\gamma\frac{w}{{\sqrt {\operatorname{var}}}}*x+\gamma\frac{{\left( {b - \operatorname{mean}} \right)}}{{\sqrt {\operatorname{var} } }}  + \beta
   $$
 
   也即将卷积与 BN 融合后的新权重 $w'$ 与 $b'$，可表示为如下所示：
 
   $$
   \begin{gathered}
-    w' = \gamma\frac{w}{{\sqrt {\operatorname{var} } }}  \hfill \\
-    b' = \gamma\frac{{\left( {b - mean} \right)}}{{\sqrt {\operatorname{var} } }}  + \beta \end{gathered}
+    w' = \gamma\frac{w}{{\sqrt {\operatorname{var} } }}  \\
+    b' = \gamma\frac{{\left( {b - \operatorname{mean}} \right)}}{{\sqrt {\operatorname{var} } }}  + \beta 
+  \end{gathered}
   $$
 
   最后，将卷积、BN 与 ReLU 融合，可得到如下表达式：
 
   $$
-  \hfill \\
-    y=max(0,w'*x+b') \hfill \\
+    y=\operatorname{max}(0,w'*x+b')  \\
   $$
 
 ## TVM 融合规则与算法
 
-[TVM](https://github.com/apache/tvm)是一个端到端的机器学习编译框架，它的目标是优化机器学习模型让其高效运行在不同的硬件平台上。它前端支持 TensorFlow、Pytorch、MXNet、ONNX 等几乎所有的主流框架。它支持多种后端（CUDA、ROCm、Vulkan、Metal、OpenCL、LLVM、C、WASM）及不同的设备平台（GPU、CPU、FPGA 及各种自定义 NPU）。
+[TVM](https://github.com/apache/tvm) 是一个端到端的机器学习编译框架，它的目标是优化机器学习模型让其高效运行在不同的硬件平台上。它前端支持 TensorFlow、Pytorch、MXNet、ONNX 等几乎所有的主流框架。它支持多种后端（CUDA、ROCm、Vulkan、Metal、OpenCL、LLVM、C、WASM）及不同的设备平台（GPU、CPU、FPGA 及各种自定义 NPU）。
 
 TVM 主要用于推理场景。在架构上，主要包括 Relay 和 TIR 两层。其通过 Relay 导入推理模型，随后进行融合优化，最后通过 TIR 生成融合算子。TVM 整体的算子融合策略是基于支配树来实现的，下面将介绍支配树等相关概念。
 
@@ -218,15 +218,15 @@ TVM 主要用于推理场景。在架构上，主要包括 Relay 和 TIR 两层�
 - 支配树：各个点的支配点构成的树
 - 支配点：所有能够到达当前节点的路径的公共祖先点（ Least Common Ancestors，LCA）
 
-具体而言，对于一张有向图(可以有环)我们规定一个起点 $r$，从 $r$ 点到图上另一个点 $w$ 可能存在很多条路径(下面将 $r$ 到 $w$ 简写为 $r→w$)。如果对于 $r→w$ 的任意一条路径中都存在一个点 $p$，那么我们称点 $p$ 为 $w$ 的支配点(也可以称作是 $r→w$ 的必经点)，注意 $r$ 点不讨论支配点。
+具体而言，对于一张有向图(可以有环)我们规定一个起点 $r$，从 $r$ 点到图上另一个点 $w$ 可能存在很多条路径(下面将 $r$ 到 $w$ 简写为 $r→w$)。如果对于 $r→w$ 的任意一条路径中都存在一个点 $p$，那么我们称点 $p$ 为 $w$ 的支配点(也可以称作是 $r→w$ 的必经点)。注意，$r$ 点不讨论支配点，也就是说我们不把 $r$ 点算作任何点的支配点，也不讨论 $r$ 点自身的支配点。
 
-下面用 $idom[u]$ 表示离点 $u$ 最近的支配点。对于原图上除 $r$ 外每一个点 $u$，从 $idom[u]$ 向 $u$ 建一条边，最后我们可以得到一个以 $r$ 为根的树。这个树我们就叫它"支配树"。
+下面用 $\text{idom}[u]$ 表示离点 $u$ 最近的支配点。对于原图上除 $r$ 外每一个点 $u$，从 $\text{idom}[u]$ 向 $u$ 建一条边，最后我们可以得到一个以 $r$ 为根的树。这个树我们就叫它"支配树"。
 
-如下图所示，到达 Node8 的路径有 Node3->4->7->8，Node3->5->7->8，Node3->6->7->8，因此 Node4，Node5，Node6，Node7 为 Node8 的支配点。
+如下图所示，到达 Node8 的路径有 Node3->4->7->8，Node3->5->7->8，Node3->6->7->8，因此在 $\text{Node3}→\text{Node8}$ 中，Node7 为 Node8 的支配点。
 
-![TVM 示意图](images/03OPFusion11.png)
+<img src="images/03OPFusion11.png" alt="TVM 示意图" width="500">
 
-TVM 的算子融合策略就是检查每个 Node 到其支配点的 Node 是否符合融合条件，如果符合就对其进行融合。如上图，检查 Node4->Node7->Node8 是否能融合，若可以融合，则用新的算子替代原来路径上的算子。因此支配树作用如下：
+TVM 的算子融合策略就是检查每个 Node 到其支配点的 Node 是否符合融合条件，如果符合就对其进行融合。如上图，检查 Node3->Node7->Node8 是否能融合，若可以融合，则用新的算子替代原来路径上的算子。因此支配树作用如下：
 
 - 检查每个 Node 到其支配点的 Node 是否符合融合条件
 - 融合的基本规则是融合掉的 Node 节点不会对剩下的节点产生影响
