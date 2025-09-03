@@ -20,7 +20,7 @@ pip install sphinx-book-theme
 ...
 html_theme = "sphinx_book_theme"
 ...
-``` 
+```
 
 这将为您的文档激活 `sphinx_book_theme` 图书主题。
 
